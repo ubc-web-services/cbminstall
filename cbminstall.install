@@ -1,0 +1,81 @@
+<?php
+
+function cbminstall_schema() {
+
+	$schema['civicrm_cbm_trxn'] = array(
+		'fields' => array(
+			'id' => array( 'type' => 'serial', 'size' => 'medium', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'cbm_unique_id' => array( 'type' => 'varchar', 'length' => 45, 'not null' => TRUE ),
+			'payment_num' => array( 'type' => 'int', 'size' => 'large', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'auth_url' => array( 'type' => 'varchar', 'length' => 64, 'not null' => TRUE ),	
+			'auth_port' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'state' => array( 'type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => 'NEW' ),	
+			'amount' => array( 'type' => 'numeric', 'precision' => 8, 'scale' => 2, 'not null' => TRUE ),	
+			'contact_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'contribution_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'contributionType_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null' => TRUE ),	
+			'invoice_id' => array( 'type' => 'varchar', 'length' => 64, 'not null' => TRUE ),	
+			'component' => array( 'type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => 'event' ),	
+			'qfkey' => array( 'type' => 'varchar', 'length' => 64, 'not null' => TRUE ),	
+			'participant_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'default' => NULL ),	
+			'event_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'default' => NULL ),	
+			'membership_id' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'default' => NULL ),	
+			'notification_request_code' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'default' => NULL ),	
+			'continue_status_code' => array( 'type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'default' => NULL )	
+		),
+		'primary key' => array('id')
+	);
+
+	return $schema;
+}
+
+function cbminstall_install() {
+	drupal_install_schema('cbminstall');
+	
+	$query = 'ALTER TABLE civicrm_cbm_trxn ADD FOREIGN KEY (contact_id) 
+				REFERENCES civicrm_contact(id) ON DELETE CASCADE ON UPDATE NO ACTION';
+	db_query($query);
+	
+	$query = 'ALTER TABLE civicrm_cbm_trxn ADD FOREIGN KEY (contribution_id) 
+				REFERENCES civicrm_contribution(id) ON DELETE CASCADE ON UPDATE NO ACTION';
+	db_query($query);
+
+	$query = 'ALTER TABLE civicrm_cbm_trxn ADD FOREIGN KEY (event_id) 
+				REFERENCES civicrm_event(id) ON DELETE CASCADE ON UPDATE NO ACTION';
+	db_query($query);
+
+	$query = 'ALTER TABLE civicrm_cbm_trxn ADD FOREIGN KEY (participant_id) 
+				REFERENCES civicrm_participant(id) ON DELETE CASCADE ON UPDATE NO ACTION';
+	db_query($query);
+
+	$query = 'ALTER TABLE civicrm_cbm_trxn ENGINE=InnoDB';
+	db_query($query);
+	
+	$query = 'ALTER TABLE civicrm_cbm_trxn CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci'; 
+	db_query($query);
+
+
+	$query = "INSERT INTO civicrm_payment_processor_type (name, title, description, is_active, 	
+	  			is_default, user_name_label, password_label, signature_label, class_name, url_site_default, 				 
+	  			url_api_default, url_site_test_default, url_api_test_default, billing_mode, payment_type) 
+				VALUES('CBM', 'UBC CBM', 'UBC Consolidated Billing Module', '1', '0', 'Authentication Username',
+				'Authentication Password', 'SRC_TYPE_CD','Payment_CBM', 'http://regi3.adm.ubc.ca', 'https://cbm.adm.ubc.ca',
+				'http://www4.students.ubc.ca', 'http://www4.students.ubc.ca', '4', '1')";
+	db_query($query);
+
+
+}
+
+function cbminstall_uninstall() {
+	drupal_uninstall_schema('cbminstall');
+}
+
+function cbminstall_update_6100() {
+  $ret = array();
+  db_add_field($ret, 'civicrm_cbm_trxn', 'payment_num', array('type' => 'int', 'not null' => TRUE));
+  return $ret;
+}
+
+
+
+

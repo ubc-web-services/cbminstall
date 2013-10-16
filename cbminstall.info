@@ -1,0 +1,4 @@
+; $id$
+name = CBM Install
+description = Installs the MySQL table necessary for the CBM to be available to CiviEvents
+core = 6.x
